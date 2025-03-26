@@ -59,12 +59,34 @@ class NoteDatabase {
 
   Future<List<Note>> getAllNotes() async {
     final db = await instance.database;
-    final orderBy = '${NoteFields.number} ASC';
-    final result = await db.query(tableNotes, orderBy: orderBy);
+    final result = await db.query(tableNotes);
     return result.map((json) => Note.fromJson(json)).toList();
   }
 
-  Future<int> update(Note note) async {
+  Future<Note> getNoteById(int id) async {
+    final db = await instance.database;
+    final result = await db.query(
+      tableNotes,
+      where: '${NoteFields.id} = ?',
+      whereArgs: [id],
+    );
+    if (result.isNotEmpty) {
+      return Note.fromJson(result.first);
+    } else {
+      throw Exception('ID $id not found');
+    }
+  }
+
+  Future<int> deleteNoteById(int id) async {
+    final db = await instance.database;
+    return await db.delete(
+      tableNotes,
+      where: '${NoteFields.id} = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> updateNote(Note note) async {
     final db = await instance.database;
     return db.update(
       tableNotes,
